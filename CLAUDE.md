@@ -50,6 +50,27 @@ uv sync
 uv add package-name
 ```
 
+### Code Quality Tools
+```bash
+# Run all quality checks (recommended before commits)
+./scripts/quality.sh
+
+# Auto-fix formatting issues
+./scripts/format-fix.sh
+
+# Check formatting only
+./scripts/format.sh
+
+# Run linting only
+./scripts/lint.sh
+
+# Individual tool commands
+uv run black backend/                    # Format code
+uv run isort backend/                    # Sort imports
+uv run flake8 backend/                   # Lint code
+uv run mypy backend/                     # Type checking
+```
+
 ### Environment Setup
 - Create `.env` file with `ANTHROPIC_API_KEY=your_key_here`
 - Uses Python 3.13+ and uv package manager
@@ -69,5 +90,14 @@ The system uses a centralized configuration in `backend/config.py`:
 - ChromaDB automatically initializes on first run
 - Documents in `docs/` folder are auto-loaded on application startup
 - CORS is enabled for development with wildcard origins
-- No test suite or linting configuration currently present
 - Frontend uses vanilla JavaScript (no framework dependencies)
+
+## Code Quality Standards
+
+The project uses the following tools to maintain code quality:
+- **Black** - Automatic code formatting with 88-character line length
+- **isort** - Import sorting and organization
+- **flake8** - Code linting and style checking
+- **mypy** - Static type checking
+
+All code should pass quality checks before commits. Run `./scripts/quality.sh` to verify.

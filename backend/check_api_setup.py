@@ -32,7 +32,9 @@ def check_api_key():
         print(f"✅ API key found (starts with sk-ant-)")
         return True
     else:
-        print(f"⚠️  API key found but format looks unusual: {config.ANTHROPIC_API_KEY[:10]}...")
+        print(
+            f"⚠️  API key found but format looks unusual: {config.ANTHROPIC_API_KEY[:10]}..."
+        )
         return True
 
 
@@ -44,7 +46,7 @@ def check_course_data():
     config.ANTHROPIC_API_KEY = "test-key"  # Use dummy key for data check
 
     try:
-        with patch('rag_system.AIGenerator') as mock_ai:
+        with patch("rag_system.AIGenerator") as mock_ai:
             mock_ai.return_value = Mock()
             rag_system = RAGSystem(config)
 
@@ -55,8 +57,12 @@ def check_course_data():
                 print("⚠️  No courses loaded. Attempting to load from docs/...")
                 docs_path = Path(__file__).parent.parent / "docs"
                 if docs_path.exists():
-                    added_courses, added_chunks = rag_system.add_course_folder(str(docs_path))
-                    print(f"   Added {added_courses} courses with {added_chunks} chunks")
+                    added_courses, added_chunks = rag_system.add_course_folder(
+                        str(docs_path)
+                    )
+                    print(
+                        f"   Added {added_courses} courses with {added_chunks} chunks"
+                    )
                     return added_courses > 0
                 else:
                     print("❌ No docs folder found!")
@@ -79,7 +85,7 @@ def test_search_functionality():
     try:
         from unittest.mock import Mock, patch
 
-        with patch('rag_system.AIGenerator') as mock_ai:
+        with patch("rag_system.AIGenerator") as mock_ai:
             mock_ai.return_value = Mock()
             rag_system = RAGSystem(config)
 
@@ -139,7 +145,7 @@ def main():
         ("API Key", check_api_key),
         ("Course Data", check_course_data),
         ("Search Function", test_search_functionality),
-        ("AI Generator", test_ai_generator)
+        ("AI Generator", test_ai_generator),
     ]
 
     results = []
@@ -175,4 +181,5 @@ def main():
 
 if __name__ == "__main__":
     from unittest.mock import Mock, patch
+
     main()

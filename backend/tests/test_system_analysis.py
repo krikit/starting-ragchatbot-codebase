@@ -2,14 +2,18 @@
 System analysis test to identify issues without requiring API keys.
 This test examines the system components and identifies potential failure points.
 """
-import pytest
-import sys
+
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import sys
+
+import pytest
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from unittest.mock import Mock, patch
-from rag_system import RAGSystem
+
 from config import Config
+from rag_system import RAGSystem
 from vector_store import SearchResults
 
 
@@ -48,7 +52,7 @@ class TestSystemAnalysis:
             documents=["Test doc"],
             metadata=[{"course_title": "Test Course"}],
             distances=[0.1],
-            error=None
+            error=None,
         )
 
         assert not results.is_empty()
@@ -87,7 +91,7 @@ class TestSystemAnalysis:
 
     def test_tool_manager_functionality(self):
         """Test tool manager can register and execute tools"""
-        from search_tools import ToolManager, CourseSearchTool
+        from search_tools import CourseSearchTool, ToolManager
         from vector_store import VectorStore
 
         vector_store = VectorStore("./test_chroma_tm", "all-MiniLM-L6-v2", 5)
@@ -112,11 +116,11 @@ class TestSystemAnalysis:
         config = Config()
 
         # Check required attributes
-        assert hasattr(config, 'ANTHROPIC_API_KEY')
-        assert hasattr(config, 'ANTHROPIC_MODEL')
-        assert hasattr(config, 'EMBEDDING_MODEL')
-        assert hasattr(config, 'CHUNK_SIZE')
-        assert hasattr(config, 'MAX_RESULTS')
+        assert hasattr(config, "ANTHROPIC_API_KEY")
+        assert hasattr(config, "ANTHROPIC_MODEL")
+        assert hasattr(config, "EMBEDDING_MODEL")
+        assert hasattr(config, "CHUNK_SIZE")
+        assert hasattr(config, "MAX_RESULTS")
 
         # Check default values
         assert config.ANTHROPIC_MODEL == "claude-sonnet-4-20250514"
@@ -128,20 +132,20 @@ class TestSystemAnalysis:
 
     def test_rag_system_component_initialization(self):
         """Test RAG system components can be initialized"""
-        with patch('rag_system.AIGenerator') as mock_ai:
+        with patch("rag_system.AIGenerator") as mock_ai:
             mock_ai.return_value = Mock()
 
             try:
                 rag_system = RAGSystem(self.config)
 
                 # Check all components exist
-                assert hasattr(rag_system, 'vector_store')
-                assert hasattr(rag_system, 'document_processor')
-                assert hasattr(rag_system, 'ai_generator')
-                assert hasattr(rag_system, 'session_manager')
-                assert hasattr(rag_system, 'tool_manager')
-                assert hasattr(rag_system, 'search_tool')
-                assert hasattr(rag_system, 'outline_tool')
+                assert hasattr(rag_system, "vector_store")
+                assert hasattr(rag_system, "document_processor")
+                assert hasattr(rag_system, "ai_generator")
+                assert hasattr(rag_system, "session_manager")
+                assert hasattr(rag_system, "tool_manager")
+                assert hasattr(rag_system, "search_tool")
+                assert hasattr(rag_system, "outline_tool")
 
                 print("✅ RAG system components initialize successfully")
 
@@ -158,13 +162,15 @@ class TestSystemAnalysis:
 
     def test_course_data_directory(self):
         """Check if course data directory exists"""
-        docs_path = os.path.join(os.path.dirname(__file__), '../../docs')
+        docs_path = os.path.join(os.path.dirname(__file__), "../../docs")
 
         if os.path.exists(docs_path):
             files = os.listdir(docs_path)
-            course_files = [f for f in files if f.endswith(('.txt', '.pdf', '.docx'))]
+            course_files = [f for f in files if f.endswith((".txt", ".pdf", ".docx"))]
 
-            print(f"✅ Found docs directory with {len(course_files)} potential course files:")
+            print(
+                f"✅ Found docs directory with {len(course_files)} potential course files:"
+            )
             for file in course_files[:5]:  # Show first 5 files
                 print(f"   - {file}")
 
@@ -172,7 +178,9 @@ class TestSystemAnalysis:
                 print("⚠️  No course files found in docs directory")
 
         else:
-            print("❌ No docs directory found - this could cause 'query failed' responses")
+            print(
+                "❌ No docs directory found - this could cause 'query failed' responses"
+            )
 
     def test_identify_potential_issues(self):
         """Identify potential issues that could cause 'query failed'"""
@@ -185,7 +193,7 @@ class TestSystemAnalysis:
             print("✅ ANTHROPIC_API_KEY is configured")
 
         # Check docs directory
-        docs_path = os.path.join(os.path.dirname(__file__), '../../docs')
+        docs_path = os.path.join(os.path.dirname(__file__), "../../docs")
         if not os.path.exists(docs_path):
             issues.append("❌ No docs directory found for course data")
 
@@ -201,6 +209,7 @@ class TestSystemAnalysis:
         # Test vector store creation
         try:
             from vector_store import VectorStore
+
             test_store = VectorStore("./test_permissions", "all-MiniLM-L6-v2", 5)
             print("✅ Vector store can be created")
         except Exception as e:

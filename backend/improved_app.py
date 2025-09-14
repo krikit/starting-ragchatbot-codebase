@@ -1,16 +1,17 @@
 import warnings
+
 warnings.filterwarnings("ignore", message="resource_tracker: There appear to be.*")
 
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from pydantic import BaseModel
-from typing import List, Optional
-import os
 import logging
+import os
+from typing import List, Optional
 
 from config import config
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 from rag_system import RAGSystem
 
 # Set up logging
@@ -21,10 +22,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="Course Materials RAG System", root_path="")
 
 # Add trusted host middleware for proxy
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=["*"]
-)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 
 # Enable CORS with proper settings for proxy
 app.add_middleware(
@@ -44,25 +42,33 @@ except Exception as e:
     logger.error(f"Failed to initialize RAG system: {e}")
     rag_system = None
 
+
 # Pydantic models for request/response
 class QueryRequest(BaseModel):
     """Request model for course queries"""
+
     query: str
     session_id: Optional[str] = None
 
+
 class QueryResponse(BaseModel):
     """Response model for course queries"""
+
     answer: str
     sources: List[str]
     session_id: str
     error: Optional[str] = None
 
+
 class CourseStats(BaseModel):
     """Response model for course statistics"""
+
     total_courses: int
     course_titles: List[str]
 
+
 # API Endpoints
+
 
 @app.post("/api/query", response_model=QueryResponse)
 async def query_documents(request: QueryRequest):
@@ -75,7 +81,7 @@ async def query_documents(request: QueryRequest):
             answer="System initialization error. Please check your API key configuration and try again.",
             sources=[],
             session_id="",
-            error="RAG system not initialized"
+            error="RAG system not initialized",
         )
 
     try:
@@ -85,7 +91,7 @@ async def query_documents(request: QueryRequest):
                 answer="Please provide a question to search the course materials.",
                 sources=[],
                 session_id="",
-                error="Empty query"
+                error="Empty query",
             )
 
         # Create session if not provided
@@ -104,15 +110,15 @@ async def query_documents(request: QueryRequest):
 
         # Check for empty or problematic responses
         if not answer or answer.strip() == "":
-            answer = "I couldn't generate a response. Please try rephrasing your question."
+            answer = (
+                "I couldn't generate a response. Please try rephrasing your question."
+            )
 
-        logger.info(f"Query processed successfully, answer length: {len(answer)}, sources: {len(sources)}")
-
-        return QueryResponse(
-            answer=answer,
-            sources=sources,
-            session_id=session_id
+        logger.info(
+            f"Query processed successfully, answer length: {len(answer)}, sources: {len(sources)}"
         )
+
+        return QueryResponse(answer=answer, sources=sources, session_id=session_id)
 
     except Exception as e:
         error_msg = str(e)
@@ -132,8 +138,9 @@ async def query_documents(request: QueryRequest):
             answer=user_message,
             sources=[],
             session_id=request.session_id or "",
-            error=error_msg
+            error=error_msg,
         )
+
 
 @app.get("/api/courses", response_model=CourseStats)
 async def get_course_stats():
@@ -145,18 +152,21 @@ async def get_course_stats():
         analytics = rag_system.get_course_analytics()
         return CourseStats(
             total_courses=analytics["total_courses"],
-            course_titles=analytics["course_titles"]
+            course_titles=analytics["course_titles"],
         )
     except Exception as e:
         logger.error(f"Error getting course stats: {e}")
-        raise HTTPException(status_code=500, detail=f"Error retrieving course statistics: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving course statistics: {str(e)}"
+        )
+
 
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint"""
     status = {
         "rag_system": "initialized" if rag_system else "failed",
-        "api_key": "configured" if config.ANTHROPIC_API_KEY else "missing"
+        "api_key": "configured" if config.ANTHROPIC_API_KEY else "missing",
     }
 
     if rag_system:
@@ -167,6 +177,7 @@ async def health_check():
             status["courses_loaded"] = f"error: {e}"
 
     return status
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -179,7 +190,9 @@ async def startup_event():
     if os.path.exists(docs_path):
         logger.info("Loading initial documents...")
         try:
-            courses, chunks = rag_system.add_course_folder(docs_path, clear_existing=False)
+            courses, chunks = rag_system.add_course_folder(
+                docs_path, clear_existing=False
+            )
             logger.info(f"Loaded {courses} courses with {chunks} chunks")
 
             # Verify data was loaded
@@ -191,9 +204,12 @@ async def startup_event():
     else:
         logger.warning(f"Documents directory not found: {docs_path}")
 
+
+from fastapi.responses import FileResponse
+
 # Custom static file handler with no-cache headers for development
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+
 
 class DevStaticFiles(StaticFiles):
     async def get_response(self, path: str, scope):
@@ -204,6 +220,7 @@ class DevStaticFiles(StaticFiles):
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
         return response
+
 
 # Serve static files for the frontend
 app.mount("/", StaticFiles(directory="../frontend", html=True), name="static")

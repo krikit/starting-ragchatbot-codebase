@@ -1,10 +1,12 @@
-import pytest
-from unittest.mock import Mock, MagicMock
-import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import sys
+from unittest.mock import MagicMock, Mock
 
-from search_tools import CourseSearchTool, CourseOutlineTool, ToolManager
+import pytest
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+from search_tools import CourseOutlineTool, CourseSearchTool, ToolManager
 from vector_store import SearchResults
 
 
@@ -23,7 +25,7 @@ class TestCourseSearchTool:
             documents=["Course content about Python basics"],
             metadata=[{"course_title": "Python Programming", "lesson_number": 1}],
             distances=[0.1],
-            error=None
+            error=None,
         )
         self.mock_vector_store.search.return_value = mock_results
 
@@ -32,9 +34,7 @@ class TestCourseSearchTool:
 
         # Assert
         self.mock_vector_store.search.assert_called_once_with(
-            query="Python basics",
-            course_name=None,
-            lesson_number=None
+            query="Python basics", course_name=None, lesson_number=None
         )
         assert "[Python Programming - Lesson 1]" in result
         assert "Course content about Python basics" in result
@@ -48,7 +48,7 @@ class TestCourseSearchTool:
             documents=["Advanced Python concepts"],
             metadata=[{"course_title": "Advanced Python", "lesson_number": 2}],
             distances=[0.2],
-            error=None
+            error=None,
         )
         self.mock_vector_store.search.return_value = mock_results
 
@@ -57,9 +57,7 @@ class TestCourseSearchTool:
 
         # Assert
         self.mock_vector_store.search.assert_called_once_with(
-            query="concepts",
-            course_name="Advanced Python",
-            lesson_number=None
+            query="concepts", course_name="Advanced Python", lesson_number=None
         )
         assert "[Advanced Python - Lesson 2]" in result
 
@@ -70,7 +68,7 @@ class TestCourseSearchTool:
             documents=["Lesson 3 content"],
             metadata=[{"course_title": "Data Science", "lesson_number": 3}],
             distances=[0.15],
-            error=None
+            error=None,
         )
         self.mock_vector_store.search.return_value = mock_results
 
@@ -79,9 +77,7 @@ class TestCourseSearchTool:
 
         # Assert
         self.mock_vector_store.search.assert_called_once_with(
-            query="data analysis",
-            course_name=None,
-            lesson_number=3
+            query="data analysis", course_name=None, lesson_number=3
         )
         assert "[Data Science - Lesson 3]" in result
 
@@ -89,10 +85,7 @@ class TestCourseSearchTool:
         """Test when search returns no results"""
         # Arrange
         mock_results = SearchResults(
-            documents=[],
-            metadata=[],
-            distances=[],
-            error=None
+            documents=[], metadata=[], distances=[], error=None
         )
         self.mock_vector_store.search.return_value = mock_results
 
@@ -107,31 +100,26 @@ class TestCourseSearchTool:
         """Test empty results with filter information"""
         # Arrange
         mock_results = SearchResults(
-            documents=[],
-            metadata=[],
-            distances=[],
-            error=None
+            documents=[], metadata=[], distances=[], error=None
         )
         self.mock_vector_store.search.return_value = mock_results
 
         # Act
         result = self.search_tool.execute(
-            "topic",
-            course_name="Nonexistent Course",
-            lesson_number=999
+            "topic", course_name="Nonexistent Course", lesson_number=999
         )
 
         # Assert
-        assert "No relevant content found in course 'Nonexistent Course' in lesson 999" in result
+        assert (
+            "No relevant content found in course 'Nonexistent Course' in lesson 999"
+            in result
+        )
 
     def test_execute_search_error(self):
         """Test when search returns an error"""
         # Arrange
         mock_results = SearchResults(
-            documents=[],
-            metadata=[],
-            distances=[],
-            error="Database connection failed"
+            documents=[], metadata=[], distances=[], error="Database connection failed"
         )
         self.mock_vector_store.search.return_value = mock_results
 
@@ -148,10 +136,10 @@ class TestCourseSearchTool:
             documents=["Content 1", "Content 2"],
             metadata=[
                 {"course_title": "Course A", "lesson_number": 1},
-                {"course_title": "Course B", "lesson_number": None}
+                {"course_title": "Course B", "lesson_number": None},
             ],
             distances=[0.1, 0.2],
-            error=None
+            error=None,
         )
         self.mock_vector_store.search.return_value = mock_results
 
@@ -191,12 +179,14 @@ class TestCourseOutlineTool:
         # Arrange
         self.mock_vector_store._resolve_course_name.return_value = "Python Programming"
         mock_results = {
-            'metadatas': [{
-                'title': 'Python Programming',
-                'instructor': 'John Doe',
-                'course_link': 'https://example.com/python',
-                'lessons_json': '[{"lesson_number": 1, "lesson_title": "Basics", "lesson_link": "link1"}]'
-            }]
+            "metadatas": [
+                {
+                    "title": "Python Programming",
+                    "instructor": "John Doe",
+                    "course_link": "https://example.com/python",
+                    "lessons_json": '[{"lesson_number": 1, "lesson_title": "Basics", "lesson_link": "link1"}]',
+                }
+            ]
         }
         self.mock_vector_store.course_catalog.get.return_value = mock_results
 

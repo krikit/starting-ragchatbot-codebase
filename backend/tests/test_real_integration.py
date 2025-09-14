@@ -2,13 +2,16 @@
 Real integration test against the actual RAG system to identify issues.
 This test runs against the real components without mocking.
 """
-import pytest
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from rag_system import RAGSystem
+import os
+import sys
+
+import pytest
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
 from config import Config
+from rag_system import RAGSystem
 
 
 class TestRealIntegration:
@@ -33,7 +36,9 @@ class TestRealIntegration:
         assert len(tool_definitions) > 0, "No tools registered in tool manager"
 
         tool_names = [tool["name"] for tool in tool_definitions]
-        assert "search_course_content" in tool_names, "search_course_content tool not found"
+        assert (
+            "search_course_content" in tool_names
+        ), "search_course_content tool not found"
         assert "get_course_outline" in tool_names, "get_course_outline tool not found"
 
     def test_search_tool_direct_execution(self):
@@ -60,8 +65,12 @@ class TestRealIntegration:
 
             # Try a simple search
             results = self.rag_system.vector_store.search("test query")
-            assert hasattr(results, 'documents'), "Search results should have documents attribute"
-            assert hasattr(results, 'error'), "Search results should have error attribute"
+            assert hasattr(
+                results, "documents"
+            ), "Search results should have documents attribute"
+            assert hasattr(
+                results, "error"
+            ), "Search results should have error attribute"
 
             print(f"Search results error: {results.error}")
             print(f"Search results document count: {len(results.documents)}")
@@ -77,10 +86,12 @@ class TestRealIntegration:
                 "What is 2 + 2?",
                 conversation_history=None,
                 tools=None,
-                tool_manager=None
+                tool_manager=None,
             )
 
-            assert isinstance(response, str), f"Expected string response, got {type(response)}"
+            assert isinstance(
+                response, str
+            ), f"Expected string response, got {type(response)}"
             assert response != "", "AI generator returned empty response"
             assert "4" in response, "AI should be able to answer basic math"
 
@@ -97,10 +108,12 @@ class TestRealIntegration:
                 "What is Python programming language?",
                 conversation_history=None,
                 tools=self.rag_system.tool_manager.get_tool_definitions(),
-                tool_manager=self.rag_system.tool_manager
+                tool_manager=self.rag_system.tool_manager,
             )
 
-            assert isinstance(response, str), f"Expected string response, got {type(response)}"
+            assert isinstance(
+                response, str
+            ), f"Expected string response, got {type(response)}"
             assert response != "", "AI generator returned empty response with tools"
 
             print(f"AI response with tools: {response}")
@@ -116,14 +129,20 @@ class TestRealIntegration:
             query = "What is programming?"
             response, sources = self.rag_system.query(query)
 
-            assert isinstance(response, str), f"Expected string response, got {type(response)}"
-            assert isinstance(sources, list), f"Expected list of sources, got {type(sources)}"
+            assert isinstance(
+                response, str
+            ), f"Expected string response, got {type(response)}"
+            assert isinstance(
+                sources, list
+            ), f"Expected list of sources, got {type(sources)}"
 
             # Response should not be empty
             assert response != "", "RAG query returned empty response"
 
             # Should not contain error messages that indicate total failure
-            assert "query failed" not in response.lower(), f"RAG query failed: {response}"
+            assert (
+                "query failed" not in response.lower()
+            ), f"RAG query failed: {response}"
 
             print(f"Full RAG query response: {response}")
             print(f"Sources: {sources}")
@@ -135,14 +154,20 @@ class TestRealIntegration:
         """Test if course data is available in the system"""
         try:
             # Check if docs folder exists and has content
-            docs_path = os.path.join(os.path.dirname(__file__), '../../docs')
+            docs_path = os.path.join(os.path.dirname(__file__), "../../docs")
             if os.path.exists(docs_path):
-                files = [f for f in os.listdir(docs_path) if f.endswith(('.txt', '.pdf', '.docx'))]
+                files = [
+                    f
+                    for f in os.listdir(docs_path)
+                    if f.endswith((".txt", ".pdf", ".docx"))
+                ]
                 print(f"Found {len(files)} potential course files in docs folder")
 
                 # Try to add course data if none exists
                 if self.rag_system.vector_store.get_course_count() == 0:
-                    added_courses, added_chunks = self.rag_system.add_course_folder(docs_path)
+                    added_courses, added_chunks = self.rag_system.add_course_folder(
+                        docs_path
+                    )
                     print(f"Added {added_courses} courses with {added_chunks} chunks")
             else:
                 print("No docs folder found - system will have no course data")

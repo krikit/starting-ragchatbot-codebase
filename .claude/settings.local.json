@@ -10,7 +10,14 @@
       "mcp__playwright__browser_click",
       "Bash(mkdir:*)",
       "Bash(uv sync:*)",
-      "Bash(uv run pytest:*)"
+      "Bash(uv run pytest:*)",
+      "Bash(uv add:*)",
+      "Bash(chmod:*)",
+      "Bash(uv run isort:*)",
+      "Bash(uv run:*)",
+      "Bash(./scripts/quality.sh:*)",
+      "Bash(sed:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

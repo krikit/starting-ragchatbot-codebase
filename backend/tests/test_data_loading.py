@@ -2,15 +2,19 @@
 Test course data loading to identify why 'query failed' occurs.
 This test examines the course loading process in detail.
 """
-import pytest
-import sys
+
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import sys
+
+import pytest
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from unittest.mock import Mock, patch
-from rag_system import RAGSystem
+
 from config import Config
 from document_processor import DocumentProcessor
+from rag_system import RAGSystem
 from vector_store import VectorStore
 
 
@@ -24,13 +28,13 @@ class TestDataLoading:
 
     def test_docs_directory_content(self):
         """Examine what's in the docs directory"""
-        docs_path = os.path.join(os.path.dirname(__file__), '../../docs')
+        docs_path = os.path.join(os.path.dirname(__file__), "../../docs")
 
         if not os.path.exists(docs_path):
             pytest.skip("No docs directory found")
 
         files = os.listdir(docs_path)
-        course_files = [f for f in files if f.endswith(('.txt', '.pdf', '.docx'))]
+        course_files = [f for f in files if f.endswith((".txt", ".pdf", ".docx"))]
 
         print(f"📁 Found {len(course_files)} course files in docs:")
         for file in course_files:
@@ -40,7 +44,7 @@ class TestDataLoading:
 
             # Check if files are readable
             try:
-                with open(file_path, 'r', encoding='utf-8') as f:
+                with open(file_path, "r", encoding="utf-8") as f:
                     content_sample = f.read(200)  # First 200 chars
                     print(f"     ✅ Readable: {content_sample[:50]}...")
             except Exception as e:
@@ -50,14 +54,14 @@ class TestDataLoading:
 
     def test_document_processor_on_real_files(self):
         """Test document processor with actual course files"""
-        docs_path = os.path.join(os.path.dirname(__file__), '../../docs')
+        docs_path = os.path.join(os.path.dirname(__file__), "../../docs")
 
         if not os.path.exists(docs_path):
             pytest.skip("No docs directory found")
 
         processor = DocumentProcessor(chunk_size=800, chunk_overlap=100)
 
-        course_files = [f for f in os.listdir(docs_path) if f.endswith('.txt')]
+        course_files = [f for f in os.listdir(docs_path) if f.endswith(".txt")]
 
         if not course_files:
             pytest.skip("No .txt course files found")
@@ -90,7 +94,7 @@ class TestDataLoading:
 
     def test_vector_store_data_loading(self):
         """Test loading course data into vector store"""
-        docs_path = os.path.join(os.path.dirname(__file__), '../../docs')
+        docs_path = os.path.join(os.path.dirname(__file__), "../../docs")
 
         if not os.path.exists(docs_path):
             pytest.skip("No docs directory found")
@@ -101,7 +105,7 @@ class TestDataLoading:
 
         processor = DocumentProcessor(chunk_size=800, chunk_overlap=100)
 
-        course_files = [f for f in os.listdir(docs_path) if f.endswith('.txt')]
+        course_files = [f for f in os.listdir(docs_path) if f.endswith(".txt")]
 
         if not course_files:
             pytest.skip("No .txt course files found")
@@ -125,7 +129,9 @@ class TestDataLoading:
 
                     successful_loads += 1
                     total_chunks += len(chunks)
-                    print(f"     ✅ Added course '{course.title}' with {len(chunks)} chunks")
+                    print(
+                        f"     ✅ Added course '{course.title}' with {len(chunks)} chunks"
+                    )
                 else:
                     print(f"     ❌ Failed to process {file_name}")
 
@@ -139,7 +145,9 @@ class TestDataLoading:
         print(f"   - Final course count: {vector_store.get_course_count()}")
 
         # Verify data was loaded
-        assert vector_store.get_course_count() > 0, "No courses were loaded into vector store"
+        assert (
+            vector_store.get_course_count() > 0
+        ), "No courses were loaded into vector store"
 
         # Test search with loaded data
         results = vector_store.search("Python")
@@ -149,7 +157,7 @@ class TestDataLoading:
 
     def test_rag_system_auto_loading(self):
         """Test if RAG system automatically loads course data"""
-        with patch('rag_system.AIGenerator') as mock_ai:
+        with patch("rag_system.AIGenerator") as mock_ai:
             mock_ai.return_value = Mock()
 
             # Initialize RAG system
@@ -159,7 +167,7 @@ class TestDataLoading:
             print(f"📈 Initial course count after RAG system init: {initial_count}")
 
             # Try manual course loading
-            docs_path = os.path.join(os.path.dirname(__file__), '../../docs')
+            docs_path = os.path.join(os.path.dirname(__file__), "../../docs")
             if os.path.exists(docs_path):
                 print(f"🔄 Manually loading courses from {docs_path}")
                 added_courses, added_chunks = rag_system.add_course_folder(docs_path)
@@ -197,7 +205,7 @@ class TestDataLoading:
             "programming",
             "introduction",
             "variables",
-            "functions"
+            "functions",
         ]
 
         print(f"🔍 Testing search with loaded data:")
@@ -218,8 +226,12 @@ class TestDataLoading:
         print(f"   Result length: {len(specific_result)} characters")
         print(f"   Result preview: {specific_result[:200]}...")
 
-        assert specific_result != "", "Search should return some content with loaded data"
-        assert "No relevant content found" not in specific_result, "Should find relevant content with loaded data"
+        assert (
+            specific_result != ""
+        ), "Search should return some content with loaded data"
+        assert (
+            "No relevant content found" not in specific_result
+        ), "Should find relevant content with loaded data"
 
 
 if __name__ == "__main__":

@@ -1,12 +1,14 @@
-import pytest
-from unittest.mock import Mock, MagicMock, patch
-import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import sys
+from unittest.mock import MagicMock, Mock, patch
 
+import pytest
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
+from config import Config
 from rag_system import RAGSystem
 from vector_store import SearchResults
-from config import Config
 
 
 class TestRAGSystem:
@@ -19,10 +21,12 @@ class TestRAGSystem:
         test_config.ANTHROPIC_API_KEY = "test-key"
 
         # Mock all external dependencies
-        with patch('rag_system.DocumentProcessor'), \
-             patch('rag_system.VectorStore') as mock_vector_store_class, \
-             patch('rag_system.AIGenerator') as mock_ai_generator_class, \
-             patch('rag_system.SessionManager'):
+        with (
+            patch("rag_system.DocumentProcessor"),
+            patch("rag_system.VectorStore") as mock_vector_store_class,
+            patch("rag_system.AIGenerator") as mock_ai_generator_class,
+            patch("rag_system.SessionManager"),
+        ):
 
             # Create mock instances
             self.mock_vector_store = Mock()
@@ -40,10 +44,14 @@ class TestRAGSystem:
         query = "What are Python data types?"
 
         # Mock AI generator response that includes tool use
-        self.mock_ai_generator.generate_response.return_value = "Python has several data types including int, str, list..."
+        self.mock_ai_generator.generate_response.return_value = (
+            "Python has several data types including int, str, list..."
+        )
 
         # Mock tool manager returning sources
-        self.rag_system.tool_manager.get_last_sources.return_value = ["Python Basics - Lesson 1"]
+        self.rag_system.tool_manager.get_last_sources.return_value = [
+            "Python Basics - Lesson 1"
+        ]
 
         # Act
         response, sources = self.rag_system.query(query)
@@ -71,17 +79,23 @@ class TestRAGSystem:
 
         # Mock session manager
         mock_history = "Previous conversation about Python"
-        self.rag_system.session_manager.get_conversation_history.return_value = mock_history
+        self.rag_system.session_manager.get_conversation_history.return_value = (
+            mock_history
+        )
 
         # Mock AI response
-        self.mock_ai_generator.generate_response.return_value = "Based on previous context..."
+        self.mock_ai_generator.generate_response.return_value = (
+            "Based on previous context..."
+        )
         self.rag_system.tool_manager.get_last_sources.return_value = []
 
         # Act
         response, sources = self.rag_system.query(query, session_id=session_id)
 
         # Assert
-        self.rag_system.session_manager.get_conversation_history.assert_called_once_with(session_id)
+        self.rag_system.session_manager.get_conversation_history.assert_called_once_with(
+            session_id
+        )
 
         call_args = self.mock_ai_generator.generate_response.call_args
         assert call_args[1]["conversation_history"] == mock_history
@@ -132,7 +146,9 @@ class TestRAGSystem:
         # Arrange
         query = "Python basics"
 
-        self.mock_ai_generator.generate_response.return_value = "Python is a programming language"
+        self.mock_ai_generator.generate_response.return_value = (
+            "Python is a programming language"
+        )
         self.rag_system.tool_manager.get_last_sources.return_value = ["Source 1"]
 
         # Act
@@ -147,11 +163,13 @@ class TestRAGSystem:
         # Arrange
         query = "Programming fundamentals"
 
-        self.mock_ai_generator.generate_response.return_value = "Programming involves..."
+        self.mock_ai_generator.generate_response.return_value = (
+            "Programming involves..."
+        )
         self.rag_system.tool_manager.get_last_sources.return_value = [
             "Python Basics - Lesson 1",
             "Programming 101 - Lesson 2",
-            "Computer Science - Lesson 3"
+            "Computer Science - Lesson 3",
         ]
 
         # Act
@@ -166,8 +184,8 @@ class TestRAGSystem:
     def test_search_tool_integration(self):
         """Test that search tool is properly integrated and configured"""
         # Verify search tool was created and registered
-        assert hasattr(self.rag_system, 'search_tool')
-        assert hasattr(self.rag_system, 'tool_manager')
+        assert hasattr(self.rag_system, "search_tool")
+        assert hasattr(self.rag_system, "tool_manager")
 
         # Verify tool manager has the search tool
         tool_definitions = self.rag_system.tool_manager.get_tool_definitions()
@@ -226,29 +244,39 @@ class TestRAGSystemInitialization:
         test_config.ANTHROPIC_API_KEY = "test-key"
 
         # Mock all dependencies
-        with patch('rag_system.DocumentProcessor') as mock_doc_proc, \
-             patch('rag_system.VectorStore') as mock_vector_store, \
-             patch('rag_system.AIGenerator') as mock_ai_gen, \
-             patch('rag_system.SessionManager') as mock_session_mgr:
+        with (
+            patch("rag_system.DocumentProcessor") as mock_doc_proc,
+            patch("rag_system.VectorStore") as mock_vector_store,
+            patch("rag_system.AIGenerator") as mock_ai_gen,
+            patch("rag_system.SessionManager") as mock_session_mgr,
+        ):
 
             # Act
             rag_system = RAGSystem(test_config)
 
             # Assert
-            mock_doc_proc.assert_called_once_with(test_config.CHUNK_SIZE, test_config.CHUNK_OVERLAP)
-            mock_vector_store.assert_called_once_with(test_config.CHROMA_PATH, test_config.EMBEDDING_MODEL, test_config.MAX_RESULTS)
-            mock_ai_gen.assert_called_once_with(test_config.ANTHROPIC_API_KEY, test_config.ANTHROPIC_MODEL)
+            mock_doc_proc.assert_called_once_with(
+                test_config.CHUNK_SIZE, test_config.CHUNK_OVERLAP
+            )
+            mock_vector_store.assert_called_once_with(
+                test_config.CHROMA_PATH,
+                test_config.EMBEDDING_MODEL,
+                test_config.MAX_RESULTS,
+            )
+            mock_ai_gen.assert_called_once_with(
+                test_config.ANTHROPIC_API_KEY, test_config.ANTHROPIC_MODEL
+            )
             mock_session_mgr.assert_called_once_with(test_config.MAX_HISTORY)
 
             # Verify components are assigned
             assert rag_system.config == test_config
-            assert hasattr(rag_system, 'document_processor')
-            assert hasattr(rag_system, 'vector_store')
-            assert hasattr(rag_system, 'ai_generator')
-            assert hasattr(rag_system, 'session_manager')
-            assert hasattr(rag_system, 'tool_manager')
-            assert hasattr(rag_system, 'search_tool')
-            assert hasattr(rag_system, 'outline_tool')
+            assert hasattr(rag_system, "document_processor")
+            assert hasattr(rag_system, "vector_store")
+            assert hasattr(rag_system, "ai_generator")
+            assert hasattr(rag_system, "session_manager")
+            assert hasattr(rag_system, "tool_manager")
+            assert hasattr(rag_system, "search_tool")
+            assert hasattr(rag_system, "outline_tool")
 
     def test_tool_registration(self):
         """Test that tools are properly registered with tool manager"""
@@ -256,10 +284,12 @@ class TestRAGSystemInitialization:
         test_config = Config()
         test_config.ANTHROPIC_API_KEY = "test-key"
 
-        with patch('rag_system.DocumentProcessor'), \
-             patch('rag_system.VectorStore'), \
-             patch('rag_system.AIGenerator'), \
-             patch('rag_system.SessionManager'):
+        with (
+            patch("rag_system.DocumentProcessor"),
+            patch("rag_system.VectorStore"),
+            patch("rag_system.AIGenerator"),
+            patch("rag_system.SessionManager"),
+        ):
 
             # Act
             rag_system = RAGSystem(test_config)
@@ -281,10 +311,12 @@ class TestRAGSystemErrorHandling:
         test_config = Config()
         test_config.ANTHROPIC_API_KEY = "test-key"
 
-        with patch('rag_system.DocumentProcessor'), \
-             patch('rag_system.VectorStore') as mock_vector_store_class, \
-             patch('rag_system.AIGenerator') as mock_ai_generator_class, \
-             patch('rag_system.SessionManager'):
+        with (
+            patch("rag_system.DocumentProcessor"),
+            patch("rag_system.VectorStore") as mock_vector_store_class,
+            patch("rag_system.AIGenerator") as mock_ai_generator_class,
+            patch("rag_system.SessionManager"),
+        ):
 
             self.mock_ai_generator = Mock()
             mock_ai_generator_class.return_value = self.mock_ai_generator
@@ -305,7 +337,9 @@ class TestRAGSystemErrorHandling:
         """Test query with empty string"""
         # Arrange
         query = ""
-        self.mock_ai_generator.generate_response.return_value = "Please provide a specific question."
+        self.mock_ai_generator.generate_response.return_value = (
+            "Please provide a specific question."
+        )
         self.rag_system.tool_manager.get_last_sources.return_value = []
 
         # Act

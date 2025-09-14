@@ -1,9 +1,11 @@
-import openai
-from typing import List, Optional, Dict, Any
 import json
 import logging
+from typing import Any, Dict, List, Optional
+
+import openai
 
 logger = logging.getLogger(__name__)
+
 
 class AIGenerator:
     """Handles interactions with OpenAI's GPT API for generating responses"""
@@ -45,16 +47,15 @@ Provide only the direct answer to what was asked."""
         self.model = model
 
         # Pre-build base API parameters
-        self.base_params = {
-            "model": self.model,
-            "temperature": 0,
-            "max_tokens": 800
-        }
+        self.base_params = {"model": self.model, "temperature": 0, "max_tokens": 800}
 
-    def generate_response(self, query: str,
-                         conversation_history: Optional[str] = None,
-                         tools: Optional[List] = None,
-                         tool_manager=None) -> str:
+    def generate_response(
+        self,
+        query: str,
+        conversation_history: Optional[str] = None,
+        tools: Optional[List] = None,
+        tool_manager=None,
+    ) -> str:
         """
         Generate AI response with optional tool usage and conversation context.
 
@@ -80,10 +81,7 @@ Provide only the direct answer to what was asked."""
         messages.append({"role": "user", "content": query})
 
         # Prepare API call parameters
-        api_params = {
-            **self.base_params,
-            "messages": messages
-        }
+        api_params = {**self.base_params, "messages": messages}
 
         # Add tools if available (convert to OpenAI format)
         if tools:
@@ -116,14 +114,16 @@ Provide only the direct answer to what was asked."""
                 "function": {
                     "name": tool["name"],
                     "description": tool["description"],
-                    "parameters": tool["input_schema"]
-                }
+                    "parameters": tool["input_schema"],
+                },
             }
             openai_tools.append(openai_tool)
 
         return openai_tools
 
-    def _handle_tool_execution(self, initial_response, messages: List[Dict], tool_manager) -> str:
+    def _handle_tool_execution(
+        self, initial_response, messages: List[Dict], tool_manager
+    ) -> str:
         """
         Handle execution of tool calls and get follow-up response.
 
@@ -140,7 +140,7 @@ Provide only the direct answer to what was asked."""
         assistant_message = {
             "role": "assistant",
             "content": initial_response.choices[0].message.content,
-            "tool_calls": initial_response.choices[0].message.tool_calls
+            "tool_calls": initial_response.choices[0].message.tool_calls,
         }
         messages.append(assistant_message)
 
@@ -156,16 +156,13 @@ Provide only the direct answer to what was asked."""
             tool_message = {
                 "role": "tool",
                 "tool_call_id": tool_call.id,
-                "content": tool_result
+                "content": tool_result,
             }
             messages.append(tool_message)
 
         try:
             # Get final response without tools
-            final_params = {
-                **self.base_params,
-                "messages": messages
-            }
+            final_params = {**self.base_params, "messages": messages}
 
             final_response = self.client.chat.completions.create(**final_params)
             return final_response.choices[0].message.content

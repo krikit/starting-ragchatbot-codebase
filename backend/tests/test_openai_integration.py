@@ -1,15 +1,19 @@
 """
 Test OpenAI integration to verify the system works with ChatGPT.
 """
-import pytest
-import sys
+
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import sys
+
+import pytest
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from unittest.mock import Mock, patch
+
 from ai_generator import AIGenerator
-from rag_system import RAGSystem
 from config import Config
+from rag_system import RAGSystem
 
 
 class TestOpenAIIntegration:
@@ -20,7 +24,7 @@ class TestOpenAIIntegration:
         api_key = "test-key"
         model = "gpt-4o-mini"
 
-        with patch('ai_generator.openai.OpenAI') as mock_openai:
+        with patch("ai_generator.openai.OpenAI") as mock_openai:
             mock_client = Mock()
             mock_openai.return_value = mock_client
 
@@ -32,7 +36,7 @@ class TestOpenAIIntegration:
 
     def test_tool_format_conversion(self):
         """Test conversion from Anthropic to OpenAI tool format"""
-        with patch('ai_generator.openai.OpenAI'):
+        with patch("ai_generator.openai.OpenAI"):
             ai_gen = AIGenerator("test-key", "gpt-4o-mini")
 
             # Anthropic format tools
@@ -45,8 +49,8 @@ class TestOpenAIIntegration:
                         "properties": {
                             "query": {"type": "string", "description": "Search query"}
                         },
-                        "required": ["query"]
-                    }
+                        "required": ["query"],
+                    },
                 }
             ]
 
@@ -62,11 +66,14 @@ class TestOpenAIIntegration:
                         "parameters": {
                             "type": "object",
                             "properties": {
-                                "query": {"type": "string", "description": "Search query"}
+                                "query": {
+                                    "type": "string",
+                                    "description": "Search query",
+                                }
                             },
-                            "required": ["query"]
-                        }
-                    }
+                            "required": ["query"],
+                        },
+                    },
                 }
             ]
 
@@ -77,27 +84,26 @@ class TestOpenAIIntegration:
         config = Config()
 
         # Should have OpenAI settings
-        assert hasattr(config, 'OPENAI_API_KEY')
-        assert hasattr(config, 'OPENAI_MODEL')
+        assert hasattr(config, "OPENAI_API_KEY")
+        assert hasattr(config, "OPENAI_MODEL")
         assert config.OPENAI_MODEL == "gpt-4o-mini"
 
         # Should not have Anthropic settings
-        assert not hasattr(config, 'ANTHROPIC_API_KEY')
+        assert not hasattr(config, "ANTHROPIC_API_KEY")
 
     def test_rag_system_uses_openai(self):
         """Test that RAG system initializes with OpenAI"""
         config = Config()
         config.OPENAI_API_KEY = "test-key"
 
-        with patch('rag_system.AIGenerator') as mock_ai_gen:
+        with patch("rag_system.AIGenerator") as mock_ai_gen:
             mock_ai_gen.return_value = Mock()
 
             rag_system = RAGSystem(config)
 
             # Verify AIGenerator was called with OpenAI parameters
             mock_ai_gen.assert_called_once_with(
-                config.OPENAI_API_KEY,
-                config.OPENAI_MODEL
+                config.OPENAI_API_KEY, config.OPENAI_MODEL
             )
 
     def test_system_without_api_key(self):
@@ -105,7 +111,7 @@ class TestOpenAIIntegration:
         config = Config()
         # Don't set OPENAI_API_KEY
 
-        with patch('rag_system.AIGenerator') as mock_ai_gen:
+        with patch("rag_system.AIGenerator") as mock_ai_gen:
             mock_ai_gen.return_value = Mock()
 
             rag_system = RAGSystem(config)
@@ -113,7 +119,9 @@ class TestOpenAIIntegration:
             # Should still initialize but with empty key
             mock_ai_gen.assert_called_once_with("", config.OPENAI_MODEL)
 
-    @pytest.mark.skipif(not os.getenv("OPENAI_API_KEY"), reason="Requires OpenAI API key")
+    @pytest.mark.skipif(
+        not os.getenv("OPENAI_API_KEY"), reason="Requires OpenAI API key"
+    )
     def test_real_openai_request(self):
         """Test actual OpenAI API request (requires real API key)"""
         config = Config()
@@ -134,9 +142,11 @@ class TestOpenAIIntegration:
 
     def test_error_handling(self):
         """Test error handling with invalid API key"""
-        with patch('ai_generator.openai.OpenAI') as mock_openai:
+        with patch("ai_generator.openai.OpenAI") as mock_openai:
             mock_client = Mock()
-            mock_client.chat.completions.create.side_effect = Exception("Invalid API key")
+            mock_client.chat.completions.create.side_effect = Exception(
+                "Invalid API key"
+            )
             mock_openai.return_value = mock_client
 
             ai_gen = AIGenerator("invalid-key", "gpt-4o-mini")

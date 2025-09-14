@@ -1,8 +1,10 @@
-import pytest
-from unittest.mock import Mock, MagicMock, patch
-import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import sys
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from ai_generator import AIGenerator
 
@@ -16,7 +18,7 @@ class TestAIGenerator:
         self.model = "claude-sonnet-4-20250514"
 
         # Mock the anthropic client
-        with patch('ai_generator.anthropic.Anthropic') as mock_anthropic:
+        with patch("ai_generator.anthropic.Anthropic") as mock_anthropic:
             self.mock_client = Mock()
             mock_anthropic.return_value = self.mock_client
             self.ai_generator = AIGenerator(self.api_key, self.model)
@@ -56,8 +58,7 @@ class TestAIGenerator:
 
         # Act
         result = self.ai_generator.generate_response(
-            "Follow up question",
-            conversation_history="Previous conversation"
+            "Follow up question", conversation_history="Previous conversation"
         )
 
         # Assert
@@ -78,9 +79,7 @@ class TestAIGenerator:
 
         # Act
         result = self.ai_generator.generate_response(
-            "General question",
-            tools=tools,
-            tool_manager=mock_tool_manager
+            "General question", tools=tools, tool_manager=mock_tool_manager
         )
 
         # Assert
@@ -108,19 +107,22 @@ class TestAIGenerator:
         final_response.content = [Mock(text="Final response using search results")]
 
         # Set up client to return both responses
-        self.mock_client.messages.create.side_effect = [initial_response, final_response]
+        self.mock_client.messages.create.side_effect = [
+            initial_response,
+            final_response,
+        ]
 
         # Mock tool manager
         mock_tool_manager = Mock()
-        mock_tool_manager.execute_tool.return_value = "Search results: Python is a programming language"
+        mock_tool_manager.execute_tool.return_value = (
+            "Search results: Python is a programming language"
+        )
 
         tools = [{"name": "search_course_content", "description": "Search tool"}]
 
         # Act
         result = self.ai_generator.generate_response(
-            "What is Python?",
-            tools=tools,
-            tool_manager=mock_tool_manager
+            "What is Python?", tools=tools, tool_manager=mock_tool_manager
         )
 
         # Assert
@@ -129,8 +131,7 @@ class TestAIGenerator:
 
         # Verify tool was executed
         mock_tool_manager.execute_tool.assert_called_once_with(
-            "search_course_content",
-            query="Python basics"
+            "search_course_content", query="Python basics"
         )
 
         # Verify final response
@@ -150,7 +151,7 @@ class TestAIGenerator:
 
         base_params = {
             "messages": [{"role": "user", "content": "Tell me about ML"}],
-            "system": "You are a helpful assistant"
+            "system": "You are a helpful assistant",
         }
 
         mock_tool_manager = Mock()
@@ -162,15 +163,12 @@ class TestAIGenerator:
 
         # Act
         result = self.ai_generator._handle_tool_execution(
-            initial_response,
-            base_params,
-            mock_tool_manager
+            initial_response, base_params, mock_tool_manager
         )
 
         # Assert
         mock_tool_manager.execute_tool.assert_called_once_with(
-            "search_course_content",
-            query="machine learning"
+            "search_course_content", query="machine learning"
         )
 
         # Verify final API call structure
@@ -208,13 +206,13 @@ class TestAIGenerator:
 
         base_params = {
             "messages": [{"role": "user", "content": "Tell me about Python course"}],
-            "system": "You are a helpful assistant"
+            "system": "You are a helpful assistant",
         }
 
         mock_tool_manager = Mock()
         mock_tool_manager.execute_tool.side_effect = [
             "Python search results",
-            "Python course outline"
+            "Python course outline",
         ]
 
         final_response = Mock()
@@ -223,9 +221,7 @@ class TestAIGenerator:
 
         # Act
         result = self.ai_generator._handle_tool_execution(
-            initial_response,
-            base_params,
-            mock_tool_manager
+            initial_response, base_params, mock_tool_manager
         )
 
         # Assert
@@ -273,7 +269,7 @@ class TestAIGenerator:
 
         base_params = {
             "messages": [{"role": "user", "content": "test"}],
-            "system": "test"
+            "system": "test",
         }
 
         mock_tool_manager = Mock()
@@ -285,9 +281,7 @@ class TestAIGenerator:
 
         # Act
         result = self.ai_generator._handle_tool_execution(
-            initial_response,
-            base_params,
-            mock_tool_manager
+            initial_response, base_params, mock_tool_manager
         )
 
         # Assert
@@ -312,7 +306,7 @@ class TestAIGenerator:
 
         base_params = {
             "messages": [{"role": "user", "content": "test"}],
-            "system": "test"
+            "system": "test",
         }
 
         mock_tool_manager = Mock()
@@ -324,15 +318,12 @@ class TestAIGenerator:
 
         # Act
         result = self.ai_generator._handle_tool_execution(
-            initial_response,
-            base_params,
-            mock_tool_manager
+            initial_response, base_params, mock_tool_manager
         )
 
         # Assert
         # Should only execute the tool_use content, not the text content
         assert mock_tool_manager.execute_tool.call_count == 1
         mock_tool_manager.execute_tool.assert_called_once_with(
-            "search_course_content",
-            query="test"
+            "search_course_content", query="test"
         )

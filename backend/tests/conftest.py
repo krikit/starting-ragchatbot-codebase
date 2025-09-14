@@ -1,12 +1,14 @@
 """
 Test configuration and fixtures for the RAG chatbot system tests.
 """
-import pytest
-import sys
+
 import os
+import sys
+
+import pytest
 
 # Add backend directory to path so tests can import modules
-backend_dir = os.path.join(os.path.dirname(__file__), '..')
+backend_dir = os.path.join(os.path.dirname(__file__), "..")
 sys.path.insert(0, backend_dir)
 
 
@@ -18,14 +20,14 @@ def sample_search_results():
     return SearchResults(
         documents=[
             "Python is a high-level programming language known for its readability.",
-            "Variables in Python are created by assigning values to names."
+            "Variables in Python are created by assigning values to names.",
         ],
         metadata=[
             {"course_title": "Python Basics", "lesson_number": 1},
-            {"course_title": "Python Basics", "lesson_number": 2}
+            {"course_title": "Python Basics", "lesson_number": 2},
         ],
         distances=[0.1, 0.2],
-        error=None
+        error=None,
     )
 
 
@@ -34,12 +36,7 @@ def empty_search_results():
     """Fixture providing empty search results for testing"""
     from vector_store import SearchResults
 
-    return SearchResults(
-        documents=[],
-        metadata=[],
-        distances=[],
-        error=None
-    )
+    return SearchResults(documents=[], metadata=[], distances=[], error=None)
 
 
 @pytest.fixture
@@ -48,10 +45,7 @@ def error_search_results():
     from vector_store import SearchResults
 
     return SearchResults(
-        documents=[],
-        metadata=[],
-        distances=[],
-        error="Database connection failed"
+        documents=[], metadata=[], distances=[], error="Database connection failed"
     )
 
 
@@ -59,15 +53,17 @@ def error_search_results():
 def mock_course_metadata():
     """Fixture providing sample course metadata"""
     return {
-        'metadatas': [{
-            'title': 'Python Programming',
-            'instructor': 'John Doe',
-            'course_link': 'https://example.com/python-course',
-            'lessons_json': '''[
+        "metadatas": [
+            {
+                "title": "Python Programming",
+                "instructor": "John Doe",
+                "course_link": "https://example.com/python-course",
+                "lessons_json": """[
                 {"lesson_number": 1, "lesson_title": "Introduction", "lesson_link": "https://example.com/lesson1"},
                 {"lesson_number": 2, "lesson_title": "Variables", "lesson_link": "https://example.com/lesson2"}
-            ]'''
-        }]
+            ]""",
+            }
+        ]
     }
 
 
