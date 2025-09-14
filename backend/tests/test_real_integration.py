@@ -108,7 +108,7 @@ class TestRealIntegration:
         except Exception as e:
             pytest.fail(f"AI generator with tools failed: {e}")
 
-    @pytest.mark.skipif(not Config().ANTHROPIC_API_KEY, reason="Requires API key")
+    @pytest.mark.skipif(not Config().OPENAI_API_KEY, reason="Requires API key")
     def test_full_rag_query_flow(self):
         """Test the complete RAG query flow"""
         try:
