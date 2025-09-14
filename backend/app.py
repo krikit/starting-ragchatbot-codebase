@@ -63,7 +63,15 @@ async def query_documents(request: QueryRequest):
             session_id = rag_system.session_manager.create_session()
         
         # Process query using RAG system
-        answer, sources = rag_system.query(request.query, session_id)
+        try:
+            answer, sources = rag_system.query(request.query, session_id)
+        except Exception as e:
+            # Better error handling for API issues
+            if "api" in str(e).lower() or "key" in str(e).lower():
+                answer = "API configuration error. Please check your OpenAI API key and try again."
+            else:
+                answer = f"Error processing query: {str(e)}"
+            sources = []
         
         return QueryResponse(
             answer=answer,
