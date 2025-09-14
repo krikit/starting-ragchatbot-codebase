@@ -5,7 +5,7 @@
     padding: 0;
 }
 
-/* CSS Variables */
+/* CSS Variables - Dark Theme (Default) */
 :root {
     --primary-color: #2563eb;
     --primary-hover: #1d4ed8;
@@ -22,6 +22,27 @@
     --focus-ring: rgba(37, 99, 235, 0.2);
     --welcome-bg: #1e3a5f;
     --welcome-border: #2563eb;
+
+    /* Theme-specific transitions */
+    --theme-transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Light Theme */
+[data-theme="light"] {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --background: #ffffff;
+    --surface: #f8fafc;
+    --surface-hover: #e2e8f0;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    --user-message: #2563eb;
+    --assistant-message: #f1f5f9;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --focus-ring: rgba(37, 99, 235, 0.2);
+    --welcome-bg: #f0f7ff;
+    --welcome-border: #2563eb;
 }
 
 /* Base Styles */
@@ -34,6 +55,7 @@ body {
     overflow: hidden;
     margin: 0;
     padding: 0;
+    transition: var(--theme-transition);
 }
 
 /* Container - Full Screen */
@@ -73,6 +95,7 @@ header h1 {
     display: flex;
     overflow: hidden;
     background: var(--background);
+    transition: var(--theme-transition);
 }
 
 /* Left Sidebar */
@@ -83,6 +106,7 @@ header h1 {
     padding: 1.5rem;
     overflow-y: auto;
     flex-shrink: 0;
+    transition: var(--theme-transition);
 }
 
 /* Custom Scrollbar for Sidebar */
@@ -131,6 +155,7 @@ header h1 {
     width: 100%;
     max-width: 800px;
     margin: 0;
+    transition: var(--theme-transition);
 }
 
 /* Chat Messages */
@@ -142,6 +167,7 @@ header h1 {
     flex-direction: column;
     gap: 1rem;
     background: var(--background);
+    transition: var(--theme-transition);
 }
 
 /* Custom Scrollbar */
@@ -445,6 +471,14 @@ header h1 {
     margin: 0.5rem 0;
 }
 
+/* Sidebar Header Layout */
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 /* New Chat Button */
 .new-chat-button {
     font-size: 0.875rem;
@@ -459,7 +493,7 @@ header h1 {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     text-align: left;
-    width: 100%;
+    flex: 1;
     display: block;
 }
 
@@ -469,6 +503,67 @@ header h1 {
 
 .new-chat-button:hover {
     color: var(--primary-color);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border-color);
+    background: var(--surface);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--theme-transition), transform 0.2s ease;
+    color: var(--text-secondary);
+    position: relative;
+    flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+    background: var(--surface-hover);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.theme-toggle:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.theme-toggle:active {
+    transform: scale(0.95);
+}
+
+/* Theme Toggle Icons */
+.theme-toggle .sun-icon,
+.theme-toggle .moon-icon {
+    position: absolute;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.theme-toggle .sun-icon {
+    opacity: 0;
+    transform: rotate(180deg) scale(0.8);
+}
+
+.theme-toggle .moon-icon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+}
+
+/* Light theme icon states */
+[data-theme="light"] .theme-toggle .sun-icon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+}
+
+[data-theme="light"] .theme-toggle .moon-icon {
+    opacity: 0;
+    transform: rotate(-180deg) scale(0.8);
 }
 
 /* Sidebar Headers */
